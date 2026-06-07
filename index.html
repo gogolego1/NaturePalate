@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>완도 봄 바다 색채 팔레트 — H.E.A.L. 4차시</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+  --sea-deep: #1a3a4a;
+  --sea-mid: #2a6a7a;
+  --sea-light: #5a9aaa;
+  --foam: #e8f4f0;
+  --sand: #f5f0e4;
+  --sand-dark: #e0d8c4;
+  --ink: #1a2a1e;
+  --moss: #3a5a3a;
+  --moss-light: #5a8a5a;
+  --dawn-color: #3a4a7a;
+  --morning-color: #3a6a3a;
+  --noon-color: #7a5a1a;
+  --dusk-color: #7a2a1a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans KR',sans-serif; background:var(--sand); color:var(--ink); min-height:100vh; }
+
+.app-header {
+  background:var(--sea-deep); padding:18px 28px 14px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+}
+.header-tag { font-size:9px; letter-spacing:3px; color:var(--sea-light); text-transform:uppercase; margin-bottom:4px; }
+.header-title { font-family:'Noto Serif KR',serif; font-size:22px; color:#fff; font-weight:400; }
+.header-sub { font-size:11px; color:#7aaabb; margin-top:3px; }
+.step-indicator { display:flex; gap:6px; align-items:center; }
+.step-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.2); transition:background 0.3s; }
+.step-dot.active { background:var(--sea-light); }
+.step-dot.done { background:rgba(90,154,170,0.5); }
+
+.steps-nav { background:#132830; display:flex; border-bottom:1px solid rgba(255,255,255,0.08); }
+.step-tab {
+  flex:1; padding:10px 8px; text-align:center; font-size:10px; color:#5a7a88;
+  cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; line-height:1.4;
+}
+.step-tab:hover { color:#8abbc8; }
+.step-tab.active { color:#e8f4f0; border-bottom-color:var(--sea-light); }
+.step-tab .tab-num { display:block; font-size:14px; font-weight:700; color:inherit; margin-bottom:2px; }
+
+.main { max-width:860px; margin:0 auto; padding:24px 20px 40px; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+.section-label { font-size:10px; letter-spacing:2px; color:var(--moss-light); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.section-title { font-family:'Noto Serif KR',serif; font-size:18px; color:var(--ink); margin-bottom:6px; font-weight:400; }
+.section-desc { font-size:12px; color:#5a6a5a; line-height:1.7; margin-bottom:20px; }
+
+.quote-block { border-left:3px solid var(--sea-mid); padding:12px 16px; background:#e8f0ee; border-radius:0 8px 8px 0; margin-bottom:24px; }
+.quote-text { font-family:'Noto Serif KR',serif; font-size:14px; color:var(--sea-deep); line-height:2.2; margin-bottom:6px; }
+.quote-source { font-size:10px; color:#7a9a8a; }
+
+/* ── 업로드 카드 ── */
+.upload-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.time-upload-card {
+  border:1.5px solid var(--sand-dark); border-radius:10px; overflow:hidden;
+  background:#fff; transition:border-color 0.2s; cursor:pointer;
+}
+.time-upload-card:hover { border-color:var(--sea-light); }
+.time-upload-card.has-image { border-color:var(--moss-light); }
+.time-header { padding:8px 10px; font-size:11px; font-weight:700; display:flex; align-items:center; gap:5px; }
+.time-header.dawn    { background:#e8ecf8; color:var(--dawn-color); }
+.time-header.morning { background:#eaf2e4; color:var(--morning-color); }
+.time-header.noon    { background:#f5ede0; color:var(--noon-color); }
+.time-header.dusk    { background:#f5e4e0; color:var(--dusk-color); }
+.upload-zone {
+  height:110px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:6px;
+  position:relative; overflow:hidden; cursor:pointer;
+}
+.upload-zone img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
+.upload-placeholder { font-size:10px; color:#aaa; text-align:center; z-index:1; pointer-events:none; }
+.upload-placeholder .upload-icon { font-size:22px; margin-bottom:4px; display:block; }
+.upload-input { display:none; }
+.palette-strip { padding:6px 8px; display:flex; gap:3px; }
+.palette-cell { flex:1; height:28px; border-radius:3px; background:#eee; transition:transform 0.15s; cursor:pointer; }
+.palette-cell:hover { transform:scaleY(1.15); }
+
+/* ── 감성 단어 선택 팝업 ── */
+.feeling-trigger {
+  margin:0 8px 6px; padding:7px 10px;
+  border:1.5px solid var(--sand-dark); border-radius:7px;
+  background:var(--foam); cursor:pointer;
+  font-size:11px; color:#6a8a6a; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:space-between;
+  min-height:32px;
+}
+.feeling-trigger:hover { border-color:var(--moss-light); }
+.feeling-trigger .chosen { color:var(--ink); font-weight:500; }
+.feeling-trigger .arrow { font-size:10px; color:#aaa; }
+
+/* 감성 단어 선택 모달 */
+.word-modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(20,40,30,0.55); z-index:200;
+  align-items:center; justify-content:center;
+  padding:20px;
+}
+.word-modal-overlay.open { display:flex; }
+.word-modal {
+  background:#fff; border-radius:16px; padding:22px;
+  width:100%; max-width:540px; max-height:82vh; overflow-y:auto;
+}
+.word-modal-header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+}
+.word-modal-title { font-size:15px; font-weight:700; color:var(--sea-deep); }
+.word-modal-close {
+  width:28px; height:28px; border-radius:50%; background:var(--sand);
+  border:none; cursor:pointer; font-size:14px; color:#6a7a68;
+  display:flex; align-items:center; justify-content:center;
+}
+.word-modal-time {
+  font-size:11px; color:#7a9a8a; margin-bottom:16px;
+  padding:6px 10px; background:var(--foam); border-radius:6px;
+}
+.word-category { margin-bottom:14px; }
+.word-category-title {
+  font-size:10px; letter-spacing:1.5px; color:var(--moss-light);
+  font-weight:700; text-transform:uppercase; margin-bottom:7px;
+}
+.word-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.word-chip {
+  padding:5px 12px; border-radius:20px; font-size:12px;
+  border:1.5px solid var(--sand-dark); color:#4a6a5a;
+  cursor:pointer; transition:all 0.18s; background:#fff;
+  user-select:none;
+}
+.word-chip:hover { border-color:var(--moss-light); background:var(--foam); }
+.word-chip.selected {
+  background:var(--sea-deep); color:#fff;
+  border-color:var(--sea-deep);
+}
+.word-modal-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:16px; padding-top:14px; border-top:1px solid var(--sand-dark);
+}
+.selected-preview {
+  font-size:11px; color:#5a8a6a; flex:1;
+}
+.selected-preview .sel-label { color:#9aaa98; font-size:10px; margin-bottom:3px; }
+.sel-chips { display:flex; flex-wrap:wrap; gap:4px; }
+.sel-chip {
+  background:var(--sea-deep); color:#fff; border-radius:12px;
+  padding:3px 9px; font-size:11px; display:flex; align-items:center; gap:4px;
+}
+.sel-chip .remove { cursor:pointer; opacity:0.7; font-size:10px; }
+.word-modal-confirm {
+  padding:9px 20px; background:var(--sea-deep); color:#fff;
+  border:none; border-radius:8px; font-size:12px; font-weight:500;
+  cursor:pointer; font-family:'Noto Sans KR',sans-serif;
+  white-space:nowrap; margin-left:12px;
+}
+.word-modal-confirm:hover { background:var(--sea-mid); }
+
+.time-select-btn {
+  width:calc(100% - 16px); margin:0 8px 8px; padding:5px;
+  border-radius:5px; border:1.5px solid var(--sand-dark);
+  background:transparent; font-size:10px; color:#8a9a8a;
+  cursor:pointer; transition:all 0.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.time-select-btn:hover { border-color:var(--moss-light); color:var(--moss); }
+.time-select-btn.selected { background:var(--moss); color:#fff; border-color:var(--moss); }
+
+/* ── Step 2 관찰 ── */
+.observe-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.observe-card { background:#fff; border:1px solid var(--sand-dark); border-radius:10px; padding:16px; }
+.observe-card-title { font-size:12px; font-weight:700; color:var(--sea-deep); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.obs-dot { width:8px; height:8px; border-radius:50%; background:var(--sea-mid); }
+.brightness-vis { height:12px; border-radius:6px; background:linear-gradient(to right,#1a2a3a,#e8f4f0); margin-bottom:6px; border:1px solid var(--sand-dark); }
+.saturation-vis { height:12px; border-radius:6px; background:linear-gradient(to right,#c8c8c0,#2a8a5a); margin-bottom:6px; border:1px solid var(--sand-dark); }
+.vis-label-row { display:flex; justify-content:space-between; font-size:9px; color:#9aaa98; margin-bottom:10px; }
+.obs-markers { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.obs-marker { padding:3px 8px; border-radius:12px; font-size:10px; border:1px solid var(--sand-dark); color:#6a7a68; cursor:pointer; transition:all 0.15s; }
+.obs-marker:hover { border-color:var(--moss-light); color:var(--moss); }
+.obs-marker.selected { background:var(--sea-deep); color:#fff; border-color:var(--sea-deep); }
+.obs-label { font-size:10px; color:#8a9a88; margin-bottom:4px; }
+.obs-textarea { width:100%; border:none; border-bottom:1.5px solid var(--sand-dark); background:transparent; font-size:11px; color:var(--ink); padding:4px 0; outline:none; resize:none; height:40px; font-family:'Noto Sans KR',sans-serif; line-height:1.6; }
+.obs-textarea:focus { border-bottom-color:var(--sea-mid); }
+.palette-compare-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+.compare-card { border:1px solid #e0d8c4; border-radius:8px; overflow:hidden; background:#fff; }
+.compare-palette-strip { display:flex; height:28px; }
+.compare-palette-cell { flex:1; }
+.compare-feelings { padding:6px 8px; display:flex; flex-wrap:wrap; gap:3px; }
+.compare-feeling-chip { padding:2px 7px; border-radius:10px; font-size:9px; background:var(--foam); color:#4a6a5a; border:1px solid #c8dcd0; }
+
+/* ── Step 3 팔레트 제작 ── */
+.palette-maker { background:#fff; border:1.5px solid var(--moss); border-radius:12px; padding:20px; margin-bottom:20px; }
+.palette-name-row { display:flex; align-items:center; gap:8px; margin-bottom:20px; }
+.palette-name-label { font-size:11px; color:var(--moss); font-weight:700; white-space:nowrap; }
+.palette-name-input { flex:1; border:none; border-bottom:2px solid var(--moss); font-family:'Noto Serif KR',serif; font-size:15px; color:var(--ink); padding:4px 0; outline:none; background:transparent; }
+.palette-name-input::placeholder { color:#bbb; font-family:'Noto Sans KR',sans-serif; font-size:12px; }
+.palette-name-suffix { font-size:11px; color:var(--moss); white-space:nowrap; }
+.palette-slots-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:16px; }
+.palette-slot { display:flex; flex-direction:column; gap:4px; }
+.slot-swatch {
+  width:100%; aspect-ratio:1; border-radius:8px;
+  border:2px dashed var(--sand-dark); background:var(--foam);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+}
+.slot-swatch:hover { border-color:var(--moss-light); }
+.slot-swatch.filled { border-style:solid; border-color:transparent; }
+.slot-swatch .swatch-color { position:absolute; inset:0; border-radius:6px; }
+.slot-swatch .swatch-plus { position:relative; z-index:1; opacity:0.4; }
+.slot-name-input, .slot-feeling-display {
+  border:none; border-bottom:1px solid var(--sand-dark); font-size:10px; color:var(--ink);
+  padding:2px 0; outline:none; background:transparent; width:100%;
+  font-family:'Noto Sans KR',sans-serif; text-align:center;
+}
+.slot-name-input::placeholder { color:#ccc; font-size:9px; }
+.slot-feeling-display {
+  cursor:pointer; font-size:9px; color:#5a8a6a;
+  min-height:18px; display:flex; align-items:center; justify-content:center;
+}
+.slot-feeling-display.empty { color:#ccc; }
+.slot-hint { font-size:8px; color:#bbb; text-align:center; }
+.scene-area { border-top:1px dashed #c8d8c0; padding-top:14px; }
+.scene-label { font-size:10px; color:var(--moss); font-weight:700; margin-bottom:6px; }
+.scene-input { width:100%; border:none; border-bottom:1.5px solid var(--sand-dark); font-family:'Noto Serif KR',serif; font-size:13px; color:var(--ink); padding:6px 0; outline:none; background:transparent; }
+.scene-input::placeholder { color:#ccc; font-family:'Noto Sans KR',sans-serif; font-size:11px; }
+.scene-input:focus { border-bottom-color:var(--sea-mid); }
+
+/* ── Step 4 성찰 ── */
+.reflection-card { background:#fff; border:1px solid var(--sand-dark); border-radius:12px; padding:20px; margin-bottom:20px; }
+.reflection-q { font-family:'Noto Serif KR',serif; font-size:15px; color:var(--sea-deep); margin-bottom:4px; }
+.reflection-sub { font-size:11px; color:#7a9a8a; margin-bottom:14px; }
+.reflection-textarea { width:100%; border:none; border-bottom:1.5px solid var(--sand-dark); background:transparent; font-size:12px; color:var(--ink); padding:6px 0; outline:none; resize:none; height:72px; font-family:'Noto Sans KR',sans-serif; line-height:1.8; }
+.natural-object-row { margin-top:16px; padding-top:14px; border-top:1px solid var(--sand-dark); }
+.natural-object-label { font-size:11px; font-weight:700; color:var(--moss); margin-bottom:8px; }
+.natural-object-input { border:1.5px solid var(--sand-dark); border-radius:8px; padding:10px 14px; width:100%; font-size:13px; color:var(--ink); outline:none; font-family:'Noto Serif KR',serif; background:var(--foam); }
+.natural-object-input:focus { border-color:var(--moss); }
+.natural-object-input::placeholder { color:#bbb; font-family:'Noto Sans KR',sans-serif; font-size:11px; }
+.next-lesson-note { margin-top:12px; padding:12px 14px; background:#e8f0e4; border-radius:8px; font-size:11px; color:#4a6a4a; line-height:1.7; }
+
+.action-row { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+.btn { padding:10px 20px; border-radius:8px; font-size:12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-weight:500; transition:all 0.2s; border:none; }
+.btn-outline { background:transparent; border:1.5px solid var(--sea-mid); color:var(--sea-mid); }
+.btn-outline:hover { background:var(--sea-mid); color:#fff; }
+.btn-primary { background:var(--sea-deep); color:#fff; }
+.btn-primary:hover { background:var(--sea-mid); }
+
+.print-preview { display:none; padding:20px; background:#fff; border-radius:12px; border:1px solid var(--sand-dark); margin-top:20px; }
+.print-preview.open { display:block; }
+
+.nav-btns { display:flex; justify-content:space-between; margin-top:28px; }
+.nav-btn { padding:10px 24px; border-radius:8px; font-size:12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-weight:500; transition:all 0.2s; border:none; }
+.nav-btn-prev { background:var(--sand); color:#6a7a68; border:1.5px solid var(--sand-dark); }
+.nav-btn-prev:hover { background:var(--sand-dark); }
+.nav-btn-next { background:var(--sea-deep); color:#fff; }
+.nav-btn-next:hover { background:var(--sea-mid); }
+.nav-btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+/* 색 선택 모달 */
+.color-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center; }
+.color-modal-overlay.open { display:flex; }
+.color-modal { background:#fff; border-radius:14px; padding:20px; width:320px; max-width:90vw; }
+.color-modal-title { font-size:14px; font-weight:700; color:var(--sea-deep); margin-bottom:14px; }
+.color-sources { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:14px; }
+.color-source-card { border:1.5px solid var(--sand-dark); border-radius:8px; overflow:hidden; cursor:pointer; transition:border-color 0.2s; }
+.color-source-card:hover { border-color:var(--moss-light); }
+.color-source-strip { display:flex; height:24px; }
+.color-source-cell { flex:1; cursor:pointer; transition:transform 0.15s; }
+.color-source-cell:hover { transform:scaleY(1.2); }
+.color-source-cell.picked { outline:2px solid #fff; outline-offset:-2px; }
+.modal-manual { margin-bottom:14px; }
+.modal-manual-label { font-size:10px; color:#7a8a78; margin-bottom:6px; }
+.manual-color-input { width:100%; height:44px; border-radius:6px; border:1.5px solid var(--sand-dark); cursor:pointer; }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+.modal-btn { padding:8px 16px; border-radius:6px; font-size:11px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; border:none; }
+.modal-btn-cancel { background:var(--sand); color:#6a7a68; }
+.modal-btn-confirm { background:var(--sea-deep); color:#fff; }
+
+@media print { body { display:none; } }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+#printSheet {
+  display:none;
+  font-family:'Noto Sans KR',sans-serif;
+  color:#1a2a1e;
+  width:794px;
+  padding:50px 54px 48px;
+  background:#fff;
+  position:fixed; top:-9999px; left:0; z-index:9999;
+}
+</style>
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div>
+    <div class="header-tag">H.E.A.L. 프로젝트 · 1영역 · 4차시</div>
+    <div class="header-title">나만의 생태 색채 팔레트</div>
+    <div class="header-sub">완도 봄 바다의 하루 — 색으로 나를 읽다</div>
+  </div>
+  <div class="step-indicator" id="stepDots"></div>
+</div>
+
+<div class="steps-nav">
+  <div class="step-tab active" onclick="goToStep(0)" id="tab0"><span class="tab-num">1</span>사진 올리기</div>
+  <div class="step-tab" onclick="goToStep(1)" id="tab1"><span class="tab-num">2</span>명도·채도 관찰</div>
+  <div class="step-tab" onclick="goToStep(2)" id="tab2"><span class="tab-num">3</span>팔레트 만들기</div>
+  <div class="step-tab" onclick="goToStep(3)" id="tab3"><span class="tab-num">4</span>성찰하기</div>
+</div>
+
+<div class="main">
+
+<!-- STEP 1 -->
+<div class="panel active" id="panel0">
+  <div class="section-label">Step 1</div>
+  <div class="section-title">춘사 속 완도 봄 바다의 하루</div>
+  <div class="section-desc">시간대별 완도 봄 바다 사진을 올리면 색이 자동으로 추출됩니다.<br>각 시간대에서 느껴지는 감성 단어를 골라보세요. 여러 개 선택해도 좋아요.</div>
+  <div class="quote-block">
+    <div class="quote-text">청하에 안개 걷고 &nbsp;·&nbsp; 봄볕이 기름지다<br>물결은 비단이요 &nbsp;·&nbsp; 은빛으로 부서지네</div>
+    <div class="quote-source">윤선도 「어부사시사」 춘사 — 하루의 시간 흐름에 따라 완도 봄 바다의 색은 어떻게 달라질까요?</div>
+  </div>
+  <div class="upload-grid" id="uploadGrid"></div>
+  <div class="nav-btns">
+    <button class="nav-btn nav-btn-prev" disabled>← 이전</button>
+    <button class="nav-btn nav-btn-next" onclick="goToStep(1)">다음: 명도·채도 관찰 →</button>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="panel" id="panel1">
+  <div class="section-label">Step 2</div>
+  <div class="section-title">팔레트를 비교하며 명도와 채도를 관찰해보세요</div>
+  <div class="section-desc">네 시간대의 팔레트를 나란히 보면서 색의 밝기와 선명함이 어떻게 달라지는지 살펴보세요.</div>
+  <div class="palette-compare-grid" id="paletteCompare"></div>
+  <div class="observe-grid">
+    <div class="observe-card">
+      <div class="observe-card-title"><span class="obs-dot"></span>명도 변화 (밝기)</div>
+      <div class="brightness-vis"></div>
+      <div class="vis-label-row"><span>어두움</span><span>밝음</span></div>
+      <div class="obs-label">가장 밝은 시간대</div>
+      <div class="obs-markers" id="brightest-markers"></div>
+      <div class="obs-label" style="margin-top:8px;">밝은 색과 어두운 색, 기분이 어떻게 달라졌나요?</div>
+      <textarea class="obs-textarea" id="obs-brightness" placeholder="느낀 점을 자유롭게 써보세요..."></textarea>
+    </div>
+    <div class="observe-card">
+      <div class="observe-card-title"><span class="obs-dot"></span>채도 변화 (선명함)</div>
+      <div class="saturation-vis"></div>
+      <div class="vis-label-row"><span>탁함</span><span>선명함</span></div>
+      <div class="obs-label">가장 선명한 시간대</div>
+      <div class="obs-markers" id="vivid-markers"></div>
+      <div class="obs-label" style="margin-top:8px;">선명한 색과 탁한 색, 어느 쪽이 더 편안했나요?</div>
+      <textarea class="obs-textarea" id="obs-saturation" placeholder="느낀 점을 자유롭게 써보세요..."></textarea>
+    </div>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn nav-btn-prev" onclick="goToStep(0)">← 이전</button>
+    <button class="nav-btn nav-btn-next" onclick="goToStep(2)">다음: 팔레트 만들기 →</button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="panel" id="panel2">
+  <div class="section-label">Step 3</div>
+  <div class="section-title">나만의 생태 색채 팔레트를 완성하세요</div>
+  <div class="section-desc">추출된 색 중 나를 가장 편안하게 만드는 색을 골라 팔레트 칸을 채워보세요.<br>각 색에 나만의 이름과 감성 단어를 골라 붙여주세요.</div>
+  <div class="palette-maker">
+    <div class="palette-name-row">
+      <span class="palette-name-label">팔레트 이름 :</span>
+      <input class="palette-name-input" type="text" id="paletteName" placeholder="내 이름을 써보세요">
+      <span class="palette-name-suffix">의 완도 봄 바다 팔레트</span>
+    </div>
+    <div class="palette-slots-grid" id="paletteSlots"></div>
+    <div class="scene-area">
+      <div class="scene-label">✦ 이 팔레트에서 떠오르는 완도 봄 바다의 장면을 한 문장으로</div>
+      <input class="scene-input" type="text" id="sceneText" placeholder="예: 안개가 걷히며 은빛 물결이 비단처럼 펼쳐지는 아침 바다">
+    </div>
+  </div>
+  <div class="nav-btns">
+    <button class="nav-btn nav-btn-prev" onclick="goToStep(1)">← 이전</button>
+    <button class="nav-btn nav-btn-next" onclick="goToStep(3)">다음: 성찰하기 →</button>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="panel" id="panel3">
+  <div class="section-label">Step 4</div>
+  <div class="section-title">완성된 팔레트를 보며 성찰해보세요</div>
+  <div id="finalPalettePreview" style="margin-bottom:20px;"></div>
+  <div class="reflection-card">
+    <div class="reflection-q">이 팔레트가 나에게 왜 편안하고 치유가 되는 것 같나요?</div>
+    <div class="reflection-sub">아래 질문 중 하나를 골라 생각해보고 자유롭게 써보세요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:#f0f5ee;border-radius:7px;padding:9px 11px;border:1px solid #c8d8c0;">
+        <div style="font-size:9px;font-weight:700;color:#3a6a4a;margin-bottom:5px;">🎨 색에 대해</div>
+        <ul style="font-size:10px;color:#4a6a58;line-height:1.9;padding-left:14px;">
+          <li>이 색들을 보면 어떤 기분이 드나요?</li>
+          <li>이 색 중 가장 마음이 편안해지는 색은?</li>
+          <li>밝은 색과 어두운 색 중 어느 쪽이 더 나답다고 느껴지나요?</li>
+        </ul>
+      </div>
+      <div style="background:#f0f5ee;border-radius:7px;padding:9px 11px;border:1px solid #c8d8c0;">
+        <div style="font-size:9px;font-weight:700;color:#3a6a4a;margin-bottom:5px;">🌊 바다와 나에 대해</div>
+        <ul style="font-size:10px;color:#4a6a58;line-height:1.9;padding-left:14px;">
+          <li>완도 바다의 어떤 순간이 떠오르나요?</li>
+          <li>이 색이 왜 나를 편안하게 해 주는 것 같나요?</li>
+          <li>3차시에 고른 감성색과 비교하면 어떤가요?</li>
+        </ul>
+      </div>
+    </div>
+    <textarea class="reflection-textarea" id="reflectionText" placeholder="예: 저녁 바다의 주황빛이 따뜻하게 느껴져서 편안했어요. 그 색을 보면 할머니 댁 앞 바다가 생각나요..."></textarea>
+    <div class="natural-object-row">
+      <div class="natural-object-label">🌿 이 팔레트에서 가장 마음에 남는 완도의 자연물은?</div>
+      <input class="natural-object-input" type="text" id="naturalObject" placeholder="예: 새벽 안개, 은빛 물결, 갈대, 바위에 부서지는 파도...">
+      <div class="next-lesson-note">💡 <strong>7차시 시, 일기, 수필 쓰기</strong>에서 "나에게 치유를 주는 완도 자연물"을 고를 때, 오늘 이 팔레트에서 가장 마음에 남은 자연물을 다시 떠올려보세요. 색이 글쓰기의 씨앗이 됩니다.</div>
+    </div>
+  </div>
+  <div class="action-row">
+    <button class="btn btn-outline" onclick="doSave()" id="saveBtn">💾 이미지로 저장하기</button>
+    <button class="btn btn-primary" onclick="saveSummary()">📋 활동 요약 보기</button>
+  </div>
+  <div class="print-preview" id="summaryBox"></div>
+  <div class="nav-btns">
+    <button class="nav-btn nav-btn-prev" onclick="goToStep(2)">← 이전</button>
+    <button class="nav-btn nav-btn-next" disabled>완료 ✓</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- 감성 단어 선택 모달 -->
+<div class="word-modal-overlay" id="wordModal">
+  <div class="word-modal">
+    <div class="word-modal-header">
+      <div class="word-modal-title">감성 단어 고르기</div>
+      <button class="word-modal-close" onclick="closeWordModal()">✕</button>
+    </div>
+    <div class="word-modal-time" id="wordModalTime"></div>
+    <div id="wordCategories"></div>
+    <div class="word-modal-footer">
+      <div class="selected-preview">
+        <div class="sel-label">선택한 단어</div>
+        <div class="sel-chips" id="selChips"></div>
+      </div>
+      <button class="word-modal-confirm" onclick="confirmWords()">선택 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- 색 선택 모달 -->
+<div class="color-modal-overlay" id="colorModal">
+  <div class="color-modal">
+    <div class="color-modal-title" id="modalTitle">색 선택</div>
+    <div id="modalColorSources" class="color-sources"></div>
+    <div class="modal-manual">
+      <div class="modal-manual-label">직접 색 선택하기</div>
+      <input type="color" class="manual-color-input" id="modalColorPicker" value="#5a9aaa">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeColorModal()">취소</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmColor()">이 색으로</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 감성 단어 데이터 (100개) ─────────────────────────
+const WORD_CATEGORIES = [
+  {
+    title: '🌊 바다와 자연',
+    words: ['고요한','넓은','깊은','맑은','투명한','싱그러운','촉촉한','서늘한','따뜻한','포근한',
+            '드넓은','시원한','물빛 같은','파도치는','잔잔한','거센','짭조름한','비릿한','비옥한','원시적인']
+  },
+  {
+    title: '💚 마음의 상태',
+    words: ['평화로운','편안한','안정된','차분한','설레는','두근거리는','자유로운','홀가분한','뭉클한','벅찬',
+            '충만한','흐뭇한','든든한','보호받는','안도하는','기대되는','두려운','긴장되는','초조한','후련한']
+  },
+  {
+    title: '✨ 빛과 분위기',
+    words: ['신비로운','몽환적인','은은한','부드러운','반짝이는','눈부신','어슴푸레한','아늑한','쓸쓸한','황홀한',
+            '고즈넉한','스산한','청명한','눈이 시린','따스한','포근한 빛의','빛바랜','빛나는','투명한 빛의','어두운']
+  },
+  {
+    title: '🌱 생명과 계절',
+    words: ['생동감있는','활기찬','새로운','풋풋한','청량한','상쾌한','생기있는','따사로운','무르익은','여린',
+            '단단한','질긴','연약한','무성한','텅 빈','가득 찬','피어나는','시들어가는','돋아나는','무너지는']
+  },
+  {
+    title: '💭 기억과 감각',
+    words: ['그리운','익숙한','낯선','고독한','사색적인','나른한','묵직한','가벼운','선명한','희미한',
+            '몽롱한','아득한','생생한','까마득한','달콤한','씁쓸한','시큼한','담백한','복잡한','단순한']
+  },
+  {
+    title: '🫧 나만의 느낌',
+    words: ['뭐라 말하기 어려운','설명할 수 없는','말문이 막히는','가슴이 먹먹한','눈물이 날 것 같은',
+            '웃음이 나는','미소 짓게 되는','멍해지는','빠져드는','발걸음이 멈추는',
+            '숨이 막히는','숨통이 트이는','마음이 넓어지는','소름 돋는','온몸이 따뜻해지는',
+            '어린 시절 같은','꿈속 같은','영화 속 같은','엄마 품 같은','혼자인 것 같은']
+  },
+];
+
+const TIMES = [
+  { id:'dawn',    label:'🌙 새벽 바다', cls:'dawn',    defaultColors:['#1a2a4a','#2a3a5a','#3a4a6a','#4a5a7a','#6a7a9a'] },
+  { id:'morning', label:'🌅 아침 바다', cls:'morning', defaultColors:['#4a7a5a','#6a9a6a','#8aba7a','#aad49a','#d4eec4'] },
+  { id:'noon',    label:'☀️ 낮 바다',  cls:'noon',    defaultColors:['#2a6a8a','#3a8aaa','#5aaaca','#8acae0','#c4eaf4'] },
+  { id:'dusk',    label:'🌇 저녁 바다', cls:'dusk',    defaultColors:['#6a2a2a','#8a4a2a','#aa6a3a','#ca8a5a','#e4b080'] },
+];
+
+let state = {
+  step: 0,
+  times: TIMES.map(t => ({ ...t, image:null, colors:[...t.defaultColors], feelings:[], selected:false })),
+  palette: Array(5).fill(null).map(()=>({ color:'#e8f4f0', name:'', feelings:[] })),
+  brightestTime: null, vividestTime: null,
+  obsBrightness:'', obsSaturation:'',
+  reflection:'', naturalObject:'',
+  _wordTarget: null, // {type:'time'|'slot', idx}
+  _wordTemp: [],
+  _colorTarget: null,
+};
+
+// ── 색 추출 ──────────────────────────────────────────
+function extractColors(img, count=5) {
+  const canvas = document.createElement('canvas');
+  const size = 120; canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, size, size);
+  const data = ctx.getImageData(0, 0, size, size).data;
+
+  const buckets = {};
+  for (let i = 0; i < data.length; i += 4) {
+    const a = data[i + 3];
+    if (a < 128) continue;
+    const r = Math.round(data[i]     / 16) * 16;
+    const g = Math.round(data[i + 1] / 16) * 16;
+    const b = Math.round(data[i + 2] / 16) * 16;
+    const key = `${r},${g},${b}`;
+    buckets[key] = (buckets[key] || 0) + 1;
+  }
+
+  const sorted = Object.entries(buckets)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => {
+      const [r, g, b] = k.split(',').map(Number);
+      return { r, g, b };
+    });
+
+  const result = [];
+  const minDist = 60;
+
+  for (const c of sorted) {
+    if (result.length >= count) break;
+    const tooClose = result.some(r => {
+      const dr = c.r - r.r, dg = c.g - r.g, db = c.b - r.b;
+      return Math.sqrt(dr*dr + dg*dg + db*db) < minDist;
+    });
+    if (!tooClose) result.push(c);
+  }
+
+  if (result.length < count) {
+    for (const c of sorted) {
+      if (result.length >= count) break;
+      if (!result.includes(c)) result.push(c);
+    }
+  }
+
+  return result.map(({ r, g, b }) =>
+    `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`
+  );
+}
+
+// ── 감성 단어 모달 ────────────────────────────────────
+function openWordModal(type, idx) {
+  state._wordTarget = {type, idx};
+  const current = type==='time' ? state.times[idx].feelings : state.palette[idx].feelings;
+  state._wordTemp = [...current];
+  const timeInfo = type==='time' ? state.times[idx] : null;
+  document.getElementById('wordModalTime').textContent =
+    timeInfo ? `${timeInfo.label} 에서 느껴지는 감성을 골라보세요 (최대 4개, 없으면 직접 입력)` : '이 색의 감성 단어를 골라보세요 (최대 4개, 없으면 직접 입력)';
+  renderWordCategories();
+  renderSelChips();
+  document.getElementById('wordModal').classList.add('open');
+}
+
+function renderWordCategories() {
+  const el = document.getElementById('wordCategories');
+  el.innerHTML = WORD_CATEGORIES.map(cat => `
+    <div class="word-category">
+      <div class="word-category-title">${cat.title}</div>
+      <div class="word-chips">
+        ${cat.words.map(w => `
+          <div class="word-chip ${state._wordTemp.includes(w)?'selected':''}"
+            onclick="toggleWord('${w}')">${w}</div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('') + `
+    <div class="word-category">
+      <div class="word-category-title">✏️ 직접 입력 (목록에 없는 감성)</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="customWordInput"
+          placeholder="나만의 감성 단어를 써보세요..."
+          maxlength="12"
+          style="flex:1;border:1.5px solid var(--sand-dark);border-radius:20px;padding:6px 14px;
+                 font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;color:var(--ink);
+                 background:#fff;"
+          onkeydown="if(event.key==='Enter'){addCustomWord();event.preventDefault();}"
+          onfocus="this.style.borderColor='var(--moss-light)'"
+          onblur="this.style.borderColor='var(--sand-dark)'">
+        <button onclick="addCustomWord()"
+          style="padding:6px 14px;border-radius:20px;border:1.5px solid var(--moss);
+                 background:transparent;color:var(--moss);font-size:11px;font-weight:500;
+                 cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;">
+          + 추가
+        </button>
+      </div>
+      <div id="customWordChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+        ${state._wordTemp.filter(w => !WORD_CATEGORIES.flatMap(c=>c.words).includes(w)).map(w=>`
+          <div class="word-chip selected" onclick="toggleWord('${w}')">${w} ✕</div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleWord(w) {
+  const idx = state._wordTemp.indexOf(w);
+  if(idx===-1) {
+    if(state._wordTemp.length>=4) {
+      const input = document.getElementById('customWordInput');
+      if(input) { input.style.borderColor='#e05a5a'; setTimeout(()=>input.style.borderColor='var(--sand-dark)',1000); }
+      return;
+    }
+    state._wordTemp.push(w);
+  } else {
+    state._wordTemp.splice(idx,1);
+  }
+  renderWordCategories();
+  renderSelChips();
+}
+
+function addCustomWord() {
+  const input = document.getElementById('customWordInput');
+  if(!input) return;
+  const w = input.value.trim();
+  if(!w) return;
+  if(state._wordTemp.includes(w)) { input.value=''; return; }
+  if(state._wordTemp.length>=4) return;
+  state._wordTemp.push(w);
+  input.value = '';
+  renderWordCategories();
+  renderSelChips();
+  // 포커스 유지
+  setTimeout(()=>{ const el=document.getElementById('customWordInput'); if(el) el.focus(); },50);
+}
+
+function renderSelChips() {
+  const el = document.getElementById('selChips');
+  if(state._wordTemp.length===0) {
+    el.innerHTML = '<span style="font-size:11px;color:#bbb;">아직 선택 없음 (최대 4개, 직접 입력 가능)</span>';
+    return;
+  }
+  el.innerHTML = state._wordTemp.map(w=>
+    `<div class="sel-chip">${w}<span class="remove" onclick="toggleWord('${w}')">✕</span></div>`
+  ).join('');
+}
+
+function confirmWords() {
+  const {type,idx} = state._wordTarget;
+  if(type==='time') state.times[idx].feelings = [...state._wordTemp];
+  else state.palette[idx].feelings = [...state._wordTemp];
+  closeWordModal();
+  if(type==='time') renderUploadGrid();
+  else renderPaletteSlots();
+}
+
+function closeWordModal() {
+  document.getElementById('wordModal').classList.remove('open');
+  state._wordTarget=null; state._wordTemp=[];
+}
+
+// ── 업로드 그리드 ─────────────────────────────────────
+function renderUploadGrid() {
+  const grid = document.getElementById('uploadGrid');
+  grid.innerHTML='';
+  state.times.forEach((t,i)=>{
+    const card=document.createElement('div');
+    card.className='time-upload-card'+(t.image?' has-image':'');
+    const feelingsDisplay = t.feelings.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:3px;padding:2px 0;">${t.feelings.map(f=>`<span style="background:#e8f4f0;border:1px solid #b0d0c0;border-radius:10px;padding:2px 7px;font-size:10px;color:#3a6a4a;">${f}</span>`).join('')}</div>`
+      : '<span style="color:#bbb;font-size:10px;">단어 선택하기</span>';
+    card.innerHTML=`
+      <div class="time-header ${t.cls}">${t.label}</div>
+      <div class="upload-zone" onclick="document.getElementById('file${i}').click()">
+        ${t.image?`<img src="${t.image}">`:''}
+        <div class="upload-placeholder"><span class="upload-icon">📷</span><span>사진 올리기</span></div>
+        <input type="file" accept="image/*" class="upload-input" id="file${i}" onchange="handleUpload(event,${i})">
+      </div>
+      <div class="palette-strip" id="strip${i}"></div>
+      <div class="feeling-trigger" onclick="openWordModal('time',${i})">
+        <div class="chosen">${feelingsDisplay}</div>
+        <span class="arrow">▾</span>
+      </div>
+      <button class="time-select-btn ${t.selected?'selected':''}" onclick="toggleSelect(${i})">
+        ${t.selected?'✓ 선택됨':'이 시간 선택'}
+      </button>
+    `;
+    grid.appendChild(card);
+    renderStrip(i);
+  });
+}
+
+function renderStrip(i) {
+  const strip = document.getElementById('strip'+i);
+  if(!strip) return;
+  strip.innerHTML = state.times[i].colors.map((c,ci)=>
+    `<div class="palette-cell" style="background:${c}" title="${c}" onclick="pickColorToSlot('${c}')"></div>`
+  ).join('');
+}
+
+function pickColorToSlot(color) {
+  const empty = state.palette.findIndex(s=>s.color==='#e8f4f0');
+  if(empty!==-1){ state.palette[empty].color=color; renderPaletteSlots(); }
+}
+
+function handleUpload(e,i) {
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      state.times[i].colors=extractColors(img);
+      state.times[i].image=ev.target.result;
+      renderUploadGrid();
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function toggleSelect(i) {
+  state.times[i].selected=!state.times[i].selected;
+  renderUploadGrid();
+}
+
+// ── Step 2 비교 ───────────────────────────────────────
+function updatePaletteCompare() {
+  const el=document.getElementById('paletteCompare'); if(!el) return;
+  el.innerHTML=state.times.map(t=>`
+    <div class="compare-card">
+      <div class="time-header ${t.cls}" style="padding:6px 10px;font-size:10px;">${t.label}</div>
+      <div class="compare-palette-strip">${t.colors.map(c=>`<div class="compare-palette-cell" style="background:${c}"></div>`).join('')}</div>
+      <div class="compare-feelings">${t.feelings.length?t.feelings.map(f=>`<span class="compare-feeling-chip">${f}</span>`).join(''):'<span style="font-size:9px;color:#bbb;">감성 미선택</span>'}</div>
+    </div>
+  `).join('');
+  const mkB=document.getElementById('brightest-markers');
+  const mkV=document.getElementById('vivid-markers');
+  if(mkB) mkB.innerHTML=state.times.map((t,i)=>`<div class="obs-marker ${state.brightestTime===i?'selected':''}" onclick="state.brightestTime=${i};updatePaletteCompare()">${t.label}</div>`).join('');
+  if(mkV) mkV.innerHTML=state.times.map((t,i)=>`<div class="obs-marker ${state.vividestTime===i?'selected':''}" onclick="state.vividestTime=${i};updatePaletteCompare()">${t.label}</div>`).join('');
+}
+
+// ── Step 3 팔레트 슬롯 ────────────────────────────────
+function renderPaletteSlots() {
+  const el=document.getElementById('paletteSlots'); if(!el) return;
+  el.innerHTML=state.palette.map((s,i)=>`
+    <div class="palette-slot">
+      <div class="slot-swatch ${s.color!=='#e8f4f0'?'filled':''}" style="background:${s.color}" onclick="openColorModal(${i})">
+        ${s.color==='#e8f4f0'?'<span class="swatch-plus">+</span>':''}
+      </div>
+      <span class="slot-hint">색 이름</span>
+      <input class="slot-name-input" type="text" placeholder="나만의 이름" value="${s.name}" oninput="state.palette[${i}].name=this.value">
+      <span class="slot-hint">감성</span>
+      <div class="slot-feeling-display ${s.feelings.length?'':'empty'}" onclick="openWordModal('slot',${i})">
+        ${s.feelings.length ? s.feelings.join(' · ') : '+ 선택'}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Step 4 최종 미리보기 ─────────────────────────────
+function renderFinalPreview() {
+  const el=document.getElementById('finalPalettePreview'); if(!el) return;
+  const name=document.getElementById('paletteName')?.value||'';
+  const scene=document.getElementById('sceneText')?.value||'';
+  el.innerHTML=`
+    <div style="background:#fff;border:1.5px solid #3a5a3a;border-radius:12px;padding:16px;">
+      <div style="font-family:'Noto Serif KR',serif;font-size:15px;color:#1a3a4a;margin-bottom:12px;text-align:center;">
+        ${name?name+'의 완도 봄 바다 팔레트':'나의 완도 봄 바다 팔레트'}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        ${state.palette.map(s=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="width:100%;aspect-ratio:1;border-radius:6px;background:${s.color};border:1px solid rgba(0,0,0,0.08);"></div>
+            <div style="font-size:9px;color:#5a6a58;text-align:center;line-height:1.3;">${s.name||''}</div>
+            <div style="font-size:8px;color:#7a9a8a;text-align:center;">${s.feelings.join(' · ')||''}</div>
+          </div>`).join('')}
+      </div>
+      ${scene?`<div style="font-size:11px;color:#3a5a4a;text-align:center;font-style:italic;border-top:1px dashed #c8d8c0;padding-top:10px;">"${scene}"</div>`:''}
+    </div>
+  `;
+}
+
+// ── 색 선택 모달 ──────────────────────────────────────
+function openColorModal(i) {
+  state._colorTarget=i;
+  document.getElementById('modalTitle').textContent=`${i+1}번 칸 색 선택`;
+  renderColorModalSources();
+  document.getElementById('colorModal').classList.add('open');
+}
+function renderColorModalSources() {
+  const el=document.getElementById('modalColorSources');
+  const curColor=document.getElementById('modalColorPicker').value;
+  el.innerHTML=state.times.map((t)=>`
+    <div class="color-source-card">
+      <div class="time-header ${t.cls}" style="padding:5px 8px;font-size:10px;">${t.label}</div>
+      <div class="color-source-strip">${t.colors.map(c=>`
+        <div class="color-source-cell ${c===curColor?'picked':''}"
+          style="background:${c}" title="${c}"
+          onclick="pickCellColor('${c}',this)"></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+function pickCellColor(color, el) {
+  document.getElementById('modalColorPicker').value=color;
+  document.querySelectorAll('.color-source-cell').forEach(c=>c.classList.remove('picked'));
+  el.classList.add('picked');
+}
+function confirmColor() {
+  if(state._colorTarget!==null) {
+    state.palette[state._colorTarget].color=document.getElementById('modalColorPicker').value;
+    renderPaletteSlots();
+  }
+  closeColorModal();
+}
+function closeColorModal() {
+  document.getElementById('colorModal').classList.remove('open');
+  state._colorTarget=null;
+}
+
+// ── 활동 요약 ─────────────────────────────────────────
+function saveSummary() {
+  const name=document.getElementById('paletteName')?.value||'(미입력)';
+  const scene=document.getElementById('sceneText')?.value||'(미입력)';
+  const reflection=document.getElementById('reflectionText')?.value||'(미입력)';
+  const natural=document.getElementById('naturalObject')?.value||'(미입력)';
+  const box=document.getElementById('summaryBox');
+  box.className='print-preview open';
+  box.innerHTML=`
+    <div style="font-size:14px;font-weight:700;color:#1a3a4a;margin-bottom:14px;">📋 나의 활동 요약</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+      <tr style="border-bottom:1px solid #e0d8c4;">
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;width:110px;">팔레트 이름</td>
+        <td style="padding:7px 0;">${name}의 완도 봄 바다 팔레트</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e0d8c4;">
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;">시간대 감성</td>
+        <td style="padding:7px 0;">${state.times.map(t=>`<span style="margin-right:10px;">${t.label}: <strong>${t.feelings.join(', ')||'—'}</strong></span>`).join('')}</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e0d8c4;">
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;">팔레트 색</td>
+        <td style="padding:7px 0;">
+          <div style="display:flex;gap:6px;align-items:flex-start;">
+            ${state.palette.map(s=>`
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="width:24px;height:24px;border-radius:4px;background:${s.color};border:1px solid rgba(0,0,0,0.1);"></div>
+                <div style="font-size:8px;color:#6a7a68;text-align:center;">${s.name||''}</div>
+                <div style="font-size:7px;color:#8a9a88;text-align:center;">${s.feelings.join('·')||''}</div>
+              </div>`).join('')}
+          </div>
+        </td>
+      </tr>
+      <tr style="border-bottom:1px solid #e0d8c4;">
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;">떠오르는 장면</td>
+        <td style="padding:7px 0;font-style:italic;">${scene}</td>
+      </tr>
+      <tr style="border-bottom:1px solid #e0d8c4;">
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;">성찰</td>
+        <td style="padding:7px 0;">${reflection}</td>
+      </tr>
+      <tr>
+        <td style="padding:7px 0;color:#5a8a5a;font-weight:700;">시조의 씨앗 🌱</td>
+        <td style="padding:7px 0;font-weight:700;color:#1a3a4a;font-size:13px;">${natural}</td>
+      </tr>
+    </table>
+  `;
+  box.scrollIntoView({behavior:'smooth'});
+}
+
+// ── 저장하기 (PNG 이미지) ────────────────────────────
+function doSave() {
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = '⏳ 저장 중...';
+  btn.disabled = true;
+
+  buildPrintSheet();
+  const sheet = document.getElementById('printSheet');
+  sheet.style.display = 'block';
+  sheet.style.position = 'fixed';
+  sheet.style.top = '-9999px';
+  sheet.style.left = '0';
+  sheet.style.width = '794px'; // A4 96dpi 기준
+
+  // 폰트 로딩 대기 후 캡처
+  document.fonts.ready.then(() => {
+    html2canvas(sheet, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      windowWidth: 794,
+    }).then(canvas => {
+      sheet.style.display = 'none';
+      const name = document.getElementById('paletteName')?.value || '팔레트';
+      const filename = `${name}_완도봄바다팔레트.png`;
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      btn.textContent = '✓ 저장 완료!';
+      btn.style.borderColor = '#5a8a5a';
+      btn.style.color = '#3a6a3a';
+      setTimeout(()=>{
+        btn.textContent = '💾 이미지로 저장하기';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 2500);
+    }).catch(()=>{
+      sheet.style.display = 'none';
+      btn.textContent = '💾 이미지로 저장하기';
+      btn.disabled = false;
+      alert('저장 중 오류가 발생했어요. 다시 시도해보세요.');
+    });
+  });
+}
+
+function buildPrintSheet() {
+  const name   = document.getElementById('paletteName')?.value || '';
+  const scene  = document.getElementById('sceneText')?.value || '';
+  const refl   = document.getElementById('reflectionText')?.value || '';
+  const natural= document.getElementById('naturalObject')?.value || '';
+  const obsB   = document.getElementById('obs-brightness')?.value || '';
+  const obsS   = document.getElementById('obs-saturation')?.value || '';
+
+  // 시간대별 사진 + 팔레트 + 감성
+  const timesHTML = state.times.map(t => `
+    <div style="flex:1;border:1px solid #c8d8c0;border-radius:6px;overflow:hidden;">
+      <div style="padding:5px 8px;font-size:9px;font-weight:700;
+        background:${t.cls==='dawn'?'#e8ecf8':t.cls==='morning'?'#eaf2e4':t.cls==='noon'?'#f5ede0':'#f5e4e0'};
+        color:${t.cls==='dawn'?'#3a4a7a':t.cls==='morning'?'#3a6a3a':t.cls==='noon'?'#7a5a1a':'#7a2a1a'};">
+        ${t.label}
+      </div>
+      ${t.image
+        ? `<div style="height:60px;overflow:hidden;"><img src="${t.image}" style="width:100%;height:100%;object-fit:cover;display:block;"></div>`
+        : `<div style="height:60px;background:#f0f5ee;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;">사진 없음</div>`}
+      <div style="display:flex;height:16px;">
+        ${t.colors.map(c=>`<div style="flex:1;background:${c};"></div>`).join('')}
+      </div>
+      <div style="padding:5px 7px;min-height:22px;">
+        ${t.feelings.length
+          ? t.feelings.map(f=>`<span style="display:inline-block;background:#e8f4f0;border:1px solid #b0d0c0;border-radius:8px;padding:1px 6px;font-size:8px;color:#3a6a4a;margin:1px;">${f}</span>`).join('')
+          : '<span style="font-size:8px;color:#bbb;">감성 미선택</span>'}
+      </div>
+    </div>
+  `).join('');
+
+  // 팔레트 슬롯
+  const paletteHTML = state.palette.map(s => `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="width:100%;aspect-ratio:1;border-radius:6px;background:${s.color};border:1px solid rgba(0,0,0,0.1);-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <div style="font-size:8.5px;color:#3a5a3a;text-align:center;line-height:1.3;font-weight:500;">${s.name||'—'}</div>
+      <div style="font-size:7.5px;color:#7a9a8a;text-align:center;">${s.feelings.join(' · ')||'—'}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('printSheet').innerHTML = `
+  <div style="border-bottom:2px solid #1a3a4a;padding-bottom:7px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <div style="font-size:8px;letter-spacing:2px;color:#5a8a5a;text-transform:uppercase;margin-bottom:3px;">H.E.A.L. 프로젝트 · 1영역 · 4차시</div>
+      <div style="font-family:'Noto Serif KR',serif;font-size:20px;color:#1a3a4a;font-weight:400;">나만의 생태 색채 팔레트</div>
+      <div style="font-size:10px;color:#6a7a6a;margin-top:2px;">완도 봄 바다의 하루 — 색으로 나를 읽다</div>
+    </div>
+    <div style="display:flex;gap:8px;font-size:9px;">
+      <span style="background:#e8f0e8;border-radius:3px;padding:2px 6px;font-weight:700;color:#3a6a4a;">이름</span>
+      <span style="border-bottom:1px solid #aaa;min-width:70px;display:inline-block;"></span>
+      <span style="background:#e8f0e8;border-radius:3px;padding:2px 6px;font-weight:700;color:#3a6a4a;">날짜</span>
+      <span style="border-bottom:1px solid #aaa;min-width:60px;display:inline-block;"></span>
+    </div>
+  </div>
+
+  <!-- STEP 1: 시간대별 팔레트 -->
+  <div style="margin-bottom:12px;">
+    <div style="font-size:8px;letter-spacing:1.5px;color:#5a8a5a;font-weight:700;text-transform:uppercase;margin-bottom:5px;">Step 1 · 시간대별 팔레트</div>
+    <div style="display:flex;gap:8px;">${timesHTML}</div>
+  </div>
+
+  <!-- STEP 2: 명도·채도 관찰 -->
+  <div style="margin-bottom:12px;">
+    <div style="font-size:8px;letter-spacing:1.5px;color:#5a8a5a;font-weight:700;text-transform:uppercase;margin-bottom:5px;">Step 2 · 명도·채도 관찰</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="border:1px solid #c8d8c0;border-radius:6px;padding:8px 10px;background:#f5f8f3;">
+        <div style="font-size:9px;font-weight:700;color:#1a3a4a;margin-bottom:5px;">명도 변화 (밝기)</div>
+        <div style="font-size:8px;color:#6a8a6a;margin-bottom:3px;">가장 밝은 시간대: <strong>${state.brightestTime!==null?state.times[state.brightestTime].label:'—'}</strong></div>
+        <div style="font-size:8px;color:#6a8a6a;margin-bottom:4px;">관찰 내용:</div>
+        <div style="font-size:9px;color:#1a2a1e;min-height:28px;border-bottom:1px solid #c8d8b8;padding-bottom:4px;">${obsB||''}</div>
+      </div>
+      <div style="border:1px solid #c8d8c0;border-radius:6px;padding:8px 10px;background:#f5f8f3;">
+        <div style="font-size:9px;font-weight:700;color:#1a3a4a;margin-bottom:5px;">채도 변화 (선명함)</div>
+        <div style="font-size:8px;color:#6a8a6a;margin-bottom:3px;">가장 선명한 시간대: <strong>${state.vividestTime!==null?state.times[state.vividestTime].label:'—'}</strong></div>
+        <div style="font-size:8px;color:#6a8a6a;margin-bottom:4px;">관찰 내용:</div>
+        <div style="font-size:9px;color:#1a2a1e;min-height:28px;border-bottom:1px solid #c8d8b8;padding-bottom:4px;">${obsS||''}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 나만의 팔레트 -->
+  <div style="margin-bottom:12px;">
+    <div style="font-size:8px;letter-spacing:1.5px;color:#5a8a5a;font-weight:700;text-transform:uppercase;margin-bottom:5px;">Step 3 · 나만의 생태 색채 팔레트</div>
+    <div style="border:1.5px solid #3a5a3a;border-radius:8px;padding:10px 12px;background:#f0f5ee;">
+      <div style="font-family:'Noto Serif KR',serif;font-size:14px;color:#1a3a4a;text-align:center;margin-bottom:10px;font-weight:400;">
+        ${name?name+'의 완도 봄 바다 팔레트':'나의 완도 봄 바다 팔레트'}
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">${paletteHTML}</div>
+      ${scene?`
+      <div style="border-top:1px dashed #a0c0a0;padding-top:7px;font-size:9px;color:#3a5a4a;font-style:italic;text-align:center;">
+        ✦ "${scene}"
+      </div>`:''}
+    </div>
+  </div>
+
+  <!-- STEP 4: 성찰 -->
+  <div style="margin-bottom:10px;">
+    <div style="font-size:8px;letter-spacing:1.5px;color:#5a8a5a;font-weight:700;text-transform:uppercase;margin-bottom:5px;">Step 4 · 성찰</div>
+    <div style="border:1px solid #c8d8c0;border-radius:6px;padding:8px 10px;background:#f5f8f3;">
+      <div style="font-size:9px;font-weight:700;color:#1a3a4a;margin-bottom:4px;">이 팔레트가 나에게 왜 편안하고 치유가 되는 것 같나요?</div>
+      <div style="font-size:9px;color:#1a2a1e;min-height:32px;border-bottom:1px solid #c8d8b8;padding-bottom:4px;margin-bottom:8px;">${refl||''}</div>
+      <div style="font-size:9px;font-weight:700;color:#3a5a3a;margin-bottom:3px;">🌿 글쓰기의 씨앗 — 가장 마음에 남는 완도의 자연물</div>
+      <div style="font-family:'Noto Serif KR',serif;font-size:13px;color:#1a3a4a;font-weight:400;padding:5px 0;">${natural||'—'}</div>
+      <div style="margin-top:6px;padding:6px 8px;background:#e8f0e4;border-radius:4px;font-size:8px;color:#4a6a4a;line-height:1.6;">
+        💡 <strong>7차시 시, 일기, 수필 쓰기</strong>에서 이 자연물을 다시 떠올려보세요. 오늘 고른 색이 글쓰기의 씨앗이 됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 성취기준 -->
+  <div style="border-top:1px solid #c8d8b8;padding-top:7px;display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div style="font-size:7.5px;font-weight:700;color:#5a8a5a;letter-spacing:1px;margin-bottom:2px;">성취기준</div>
+      <div style="font-size:7.5px;color:#8a9a8a;line-height:1.6;">
+        [6미02-03] 조형 요소의 어울림을 통해 조형 원리를 이해하고 주제 표현에 연결할 수 있다.<br>
+        [6미02-04] 주제 표현에 의지를 갖고 표현 과정을 돌아보며 작품을 발전시킬 수 있다.
+      </div>
+    </div>
+    <div style="font-size:7.5px;color:#4a7a5a;background:#e0ecd8;border-radius:3px;padding:2px 7px;white-space:nowrap;">평가요소 : 조형 원리 적용 및 작품 성찰</div>
+  </div>
+  `;
+}
+function goToStep(n) {
+  state.step=n;
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.step-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  renderStepDots();
+  if(n===1) updatePaletteCompare();
+  if(n===2) renderPaletteSlots();
+  if(n===3) renderFinalPreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderStepDots() {
+  document.getElementById('stepDots').innerHTML=[0,1,2,3].map(i=>
+    `<div class="step-dot ${i===state.step?'active':i<state.step?'done':''}"></div>`
+  ).join('');
+}
+
+// 초기화
+renderUploadGrid();
+renderStepDots();
+</script>
+<!-- 인쇄 전용 A4 시트 -->
+<div id="printSheet"></div>
+
+</body>
+</html>
